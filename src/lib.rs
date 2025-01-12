@@ -7,6 +7,7 @@ use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
 
 #[derive(Debug, Default, Clone)]
+/// Options for log configuration
 pub struct LogOpts {
     /// Set the logging level based on the set of filter directives.
     pub log: Vec<Directive>,
@@ -18,6 +19,7 @@ pub struct LogOpts {
 
 #[cfg(feature = "clap")]
 #[derive(clap::Parser, Debug, Default, Clone)]
+/// Options for log configuration
 pub struct LogOptsClap {
     /// Set the logging level based on the set of filter directives.
     #[clap(short, long, default_value = "info", global = true)]
@@ -47,10 +49,47 @@ impl From<LogOptsClap> for LogOpts {
     }
 }
 
+#[allow(clippy::needless_doctest_main)]
+/// Initialize logging
+/// # Example w/ Clap
+///
+/// ```
+/// # #[cfg(feature = "clap")]
+/// # {
+/// use clap::Parser;
+/// use jt_init_logging::{LogOptsClap, init_logging};
+///
+/// #[derive(Parser)]
+/// struct Args {
+///     // ... your other args ...
+///
+///     #[clap(flatten)]
+///     log_opts: LogOptsClap,
+/// }
+///
+/// fn main() {
+///     // parse args
+///     let args = Args::parse();
+///     init_logging(&args.log_opts.into());
+///     // ... your code ...
+/// }
+/// # }
+/// ```
+///
+/// # Example w/o Clap
+/// ```
+/// use jt_init_logging::{LogOpts, init_logging};
+///
+/// fn main() {
+///     init_logging(&LogOpts::default());
+///     // ... your code ...
+/// }
+/// ```
 pub fn init_logging(opts: &LogOpts) {
     try_init_logging(opts).expect("to set global subscriber");
 }
 
+/// Initialize logging
 pub fn try_init_logging(opts: &LogOpts) -> Result<(), tracing::subscriber::SetGlobalDefaultError> {
     let fmt = tracing_subscriber::fmt::Layer::default()
         .with_writer(std::io::stderr)
