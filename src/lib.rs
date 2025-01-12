@@ -6,19 +6,43 @@ use tracing_subscriber::EnvFilter;
 use tracing_subscriber::Layer;
 use tracing_subscriber::Registry;
 
-#[derive(clap::Parser, Debug, Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct LogOpts {
     /// Set the logging level based on the set of filter directives.
-    #[clap(short, long, default_value = "info", global = true)]
     pub log: Vec<Directive>,
+    /// Turn off ANSI color codes in the logs
+    pub no_color: bool,
+    /// Enable tokio-console
+    pub enable_tokio_console: bool,
+}
+
+#[cfg(feature = "clap")]
+#[derive(clap::Parser, Debug, Default, Clone)]
+pub struct LogOptsClap {
+    /// Set the logging level based on the set of filter directives.
+    #[clap(short, long, default_value = "info", global = true)]
+    log: Vec<Directive>,
 
     /// Turn off ANSI color codes in the logs
     #[clap(long, global = true)]
-    pub no_color: bool,
+    no_color: bool,
 
     /// Enable tokio-console
+    #[cfg(feature = "console-subscriber")]
     #[clap(long, global = true)]
-    pub enable_tokio_console: bool,
+    enable_tokio_console: bool,
+}
+
+#[cfg(feature = "clap")]
+impl From<LogOptsClap> for LogOpts {
+    fn from(opts: LogOptsClap) -> Self {
+        LogOpts {
+            log: opts.log,
+            no_color: opts.no_color,
+            #[cfg(feature = "console-subscriber")]
+            enable_tokio_console: opts.enable_tokio_console,
+        }
+    }
 }
 
 pub fn init_logging(opts: &LogOpts) {
@@ -40,6 +64,9 @@ pub fn try_init_logging(opts: &LogOpts) -> Result<(), tracing::subscriber::SetGl
                 }),
         );
 
+    let subscriber = Registry::default().with(fmt);
+
+    #[cfg(feature = "console-subscriber")]
     let tc = opts.enable_tokio_console.then(|| {
         console_subscriber::Builder::default()
             .with_default_env()
@@ -49,7 +76,8 @@ pub fn try_init_logging(opts: &LogOpts) -> Result<(), tracing::subscriber::SetGl
             .spawn()
     });
 
-    let subscriber = Registry::default().with(fmt).with(tc);
+    #[cfg(feature = "console-subscriber")]
+    let subscriber = subscriber.with(tc);
 
     tracing::subscriber::set_global_default(subscriber)?;
     Ok(())

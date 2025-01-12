@@ -3,9 +3,14 @@ name = "jt_init_logging"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["clap", "console-subscriber"]
+clap = ["dep:clap"]
+console-subscriber = ["dep:console-subscriber"]
+
 [dependencies]
-clap = { version = "4.5.26", features = ["derive"] }
-console-subscriber = "0.4.1"
+clap = { version = "4.5.26", features = ["derive"], optional = true }
+console-subscriber = {version = "0.4.1", optional = true }
 tracing = "0.1.41"
 tracing-glog = "0.4.0"
 tracing-subscriber = "0.3.19"
