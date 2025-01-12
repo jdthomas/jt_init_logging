@@ -12,7 +12,7 @@ pub struct LogOpts {
     pub log: Vec<Directive>,
     /// Turn off ANSI color codes in the logs
     pub no_color: bool,
-    /// Enable tokio-console
+    /// Enable tokio-console (if feature enabled)
     pub enable_tokio_console: bool,
 }
 
@@ -41,6 +41,8 @@ impl From<LogOptsClap> for LogOpts {
             no_color: opts.no_color,
             #[cfg(feature = "console-subscriber")]
             enable_tokio_console: opts.enable_tokio_console,
+            #[cfg(not(feature = "console-subscriber"))]
+            enable_tokio_console: false,
         }
     }
 }
