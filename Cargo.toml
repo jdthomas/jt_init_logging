@@ -11,6 +11,6 @@ console-subscriber = ["dep:console-subscriber"]
 [dependencies]
 clap = { version = "4.5.40", features = ["derive"], optional = true }
 console-subscriber = {version = "0.4.1", optional = true }
-tracing = "0.1.41"
+tracing = "0.1.43"
 tracing-glog = "0.4.1"
 tracing-subscriber = { version="0.3.19", features = ["env-filter"] }
